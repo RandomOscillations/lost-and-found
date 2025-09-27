@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.py.class
+
+# Environments
+.env
+.venv/
+venv/
+.env.*
+
+# Packaging / build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# IDE / tooling
+*.swp
+*.swo
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Misc
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Local data
+infra/pgdata/
+infra/minio/

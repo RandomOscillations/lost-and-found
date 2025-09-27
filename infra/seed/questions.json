@@ -1,0 +1,72 @@
+[
+  {
+    "category": "electronics",
+    "prompt": "What are the last two digits of the device's serial number?",
+    "keywords": ["serial", "number", "digits"]
+  },
+  {
+    "category": "electronics",
+    "prompt": "What color is the device case or cover?",
+    "keywords": ["case", "color"]
+  },
+  {
+    "category": "water_bottle",
+    "prompt": "Describe any stickers or markings on the bottle.",
+    "keywords": ["sticker", "marking"]
+  },
+  {
+    "category": "water_bottle",
+    "prompt": "What size or capacity is the bottle?",
+    "keywords": ["size", "capacity"]
+  },
+  {
+    "category": "accessories",
+    "prompt": "What brand or logo appears on the item?",
+    "keywords": ["brand", "logo"]
+  },
+  {
+    "category": "accessories",
+    "prompt": "Describe any unique scratches or wear.",
+    "keywords": ["scratch", "wear"]
+  },
+  {
+    "category": "keys",
+    "prompt": "How many keys are on the keyring, and are there any keychains?",
+    "keywords": ["number", "keychain"]
+  },
+  {
+    "category": "keys",
+    "prompt": "Describe any fobs or access cards attached to the keys.",
+    "keywords": ["fob", "card"]
+  },
+  {
+    "category": "id_cards",
+    "prompt": "What department or program is listed on the ID?",
+    "keywords": ["department", "program"]
+  },
+  {
+    "category": "id_cards",
+    "prompt": "What color is the lanyard or holder?",
+    "keywords": ["lanyard", "color"]
+  },
+  {
+    "category": "clothing",
+    "prompt": "What size is the item, and is there any label inside?",
+    "keywords": ["size", "label"]
+  },
+  {
+    "category": "clothing",
+    "prompt": "Describe any unique patterns or stitching.",
+    "keywords": ["pattern", "stitching"]
+  },
+  {
+    "category": "other",
+    "prompt": "Share a unique detail only the owner would know.",
+    "keywords": ["unique", "detail"]
+  },
+  {
+    "category": "other",
+    "prompt": "Where exactly was the item last seen?",
+    "keywords": ["where", "last", "seen"]
+  }
+]
