@@ -9,8 +9,8 @@ from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...core.events import bus
-from ...models import (
+from packages.common.events import bus
+from packages.common.models import (
     AnswerSource,
     Claim,
     ClaimAnswer,
@@ -23,7 +23,7 @@ from ...models import (
     PromptSource,
     ThreadMessage,
 )
-from ...schemas.claim import ClaimAnswerInput
+from packages.common.schemas.claim import ClaimAnswerInput
 
 
 class ClaimsService:
@@ -182,7 +182,7 @@ class ClaimsService:
         return result.scalars().all()
 
     async def _get_user(self, user_id: uuid.UUID):
-        from ...models import User
+        from packages.common.models import User
 
         stmt = select(User).where(User.id == user_id)
         result = await self.session.execute(stmt)

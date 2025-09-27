@@ -43,6 +43,76 @@ services:
       - "1025:1025"
       - "8025:8025"
 
+  auth:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.auth
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/lostfound
+      JWT_PRIVATE_KEY_PATH: /keys/jwt.key
+      JWT_PUBLIC_KEY_PATH: /keys/jwt.pub
+    ports:
+      - "8001:8001"
+    volumes:
+      - ../infra/keys:/keys:ro
+
+  intake:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.intake
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/lostfound
+      AUTH_SERVICE_URL: http://auth:8001
+      JWT_PRIVATE_KEY_PATH: /keys/jwt.key
+      JWT_PUBLIC_KEY_PATH: /keys/jwt.pub
+    ports:
+      - "8002:8002"
+    volumes:
+      - ../infra/keys:/keys:ro
+
+  vision:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.vision
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/lostfound
+      JWT_PRIVATE_KEY_PATH: /keys/jwt.key
+      JWT_PUBLIC_KEY_PATH: /keys/jwt.pub
+    ports:
+      - "8003:8003"
+    volumes:
+      - ../infra/keys:/keys:ro
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.gateway
+    restart: unless-stopped
+    depends_on:
+      - auth
+      - intake
+      - vision
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/lostfound
+      AUTH_SERVICE_URL: http://auth:8001
+      INTAKE_SERVICE_URL: http://intake:8002
+      VISION_SERVICE_URL: http://vision:8003
+      JWT_PRIVATE_KEY_PATH: /keys/jwt.key
+      JWT_PUBLIC_KEY_PATH: /keys/jwt.pub
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../infra/keys:/keys:ro
+
 volumes:
   pgdata: {}
   minio: {}

@@ -5,10 +5,10 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
-from ...core.db import get_db_session
-from ...schemas.claim import Claim as ClaimSchema
-from ...schemas.claim import ClaimCreate, ClaimUpdate, Message as MessageSchema, MessageCreate
-from ..auth.dependencies import get_current_user
+from packages.common.db import get_db_session
+from packages.common.schemas.claim import Claim as ClaimSchema
+from packages.common.schemas.claim import ClaimCreate, ClaimUpdate, Message as MessageSchema, MessageCreate
+from services.auth_service.dependencies import get_current_user
 from .service import ClaimsService
 
 router = APIRouter(prefix="", tags=["claims"])

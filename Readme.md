@@ -472,6 +472,62 @@ uvicorn lostfound.main:app --reload
 
 The FastAPI app seeds `infra/seed/questions.json` into Postgres at startup and exposes the full OpenAPI documented in docs/api.html via a single gateway. Keep the existing service directories for lift-and-shift later.
 
+### Run services independently
+
+Each domain now has its own FastAPI app. Run them in separate terminals (default ports can be overridden via `AUTH_SERVICE_URL`, `INTAKE_SERVICE_URL`, `VISION_SERVICE_URL`):
+
+```bash
+# Auth service
+export JWT_PRIVATE_KEY_PATH=$(pwd)/infra/keys/jwt.key
+export JWT_PUBLIC_KEY_PATH=$(pwd)/infra/keys/jwt.pub
+uvicorn services.auth_service.app:app --reload --port 8001
+
+# Intake service
+uvicorn services.intake_service.app:app --reload --port 8002
+
+# Vision service
+uvicorn services.vision_service.app:app --reload --port 8003
+
+# Gateway (proxies to the services above and also hosts claims/notify)
+export AUTH_SERVICE_URL=http://127.0.0.1:8001
+export INTAKE_SERVICE_URL=http://127.0.0.1:8002
+export VISION_SERVICE_URL=http://127.0.0.1:8003
+export JWT_PRIVATE_KEY_PATH=$(pwd)/infra/keys/jwt.key
+export JWT_PUBLIC_KEY_PATH=$(pwd)/infra/keys/jwt.pub
+uvicorn lostfound.main:app --reload --port 8000
+```
+
+With all services running, the existing `./scripts/e2e.sh` script exercises the full flow against the gateway (`API_BASE` defaults to `http://127.0.0.1:8000`).
+
+### Compose helpers
+
+Prefer Docker? Use the helper scripts:
+
+```bash
+./scripts/dev.up.sh    # builds & starts postgres, redis, nats, minio, mailpit, auth, intake, vision, gateway
+./scripts/dev.down.sh  # stops and removes containers
+```
+
+Ports default to 8000–8003 (gateway + three services). Override by exporting `POSTGRES_PORT`, `AUTH_SERVICE_URL`, `INTAKE_SERVICE_URL`, or `VISION_SERVICE_URL` before running the script.
+
+### Development commands
+
+```bash
+# Run unit test suites (shared + individual services)
+python -m unittest tests.test_common tests.test_auth_service tests.test_intake_service tests.test_vision_service
+
+# Quick static check (compilation)
+python -m compileall packages services lostfound
+
+# End-to-end happy path (requires services running or compose stack)
+./scripts/e2e.sh
+
+# Format/organise imports with Ruff (optional)
+ruff format
+```
+
+Install Ruff for formatting/linting with `python -m pip install ruff` if you want automatic format enforcement.
+
 
 ⸻
 

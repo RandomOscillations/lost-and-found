@@ -7,18 +7,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
-from .core.config import get_settings
-from .core.db import AsyncSessionLocal, async_engine
-from .core.events import bus
-from .models import Base
-from .schemas.common import APIMessage
-from .services.auth.router import router as auth_router
+from packages.common.config import get_settings
+from packages.common.db import AsyncSessionLocal, async_engine
+from packages.common.events import bus
+from packages.common.models import Base
+from packages.common.schemas.common import APIMessage
+from packages.common.question_bank import QuestionBankService
 from .services.claims.router import router as claims_router
-from .services.claims.question_bank import QuestionBankService
-from .services.intake.router import router as intake_router
 from .services.notify import service as notify_service
-from .services.vision.router import router as vision_router
-from .services.vision.service import VisionService
+from services.vision_service.service import VisionService
+from .gateway import auth_router, intake_router, vision_router
 
 settings = get_settings()
 logger = logging.getLogger("lostfound")
