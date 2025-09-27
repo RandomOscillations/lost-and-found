@@ -49,6 +49,11 @@ lostfound/
 
 High-level architecture
 
+Current MVP runs the gateway, auth, intake, and vision services as separate FastAPI
+processes. They communicate synchronously over HTTP (through the gateway) and share
+asynchronous events through NATS (via the shared event bus abstraction in
+`packages/common/events.py`).
+
 graph TD
   subgraph Edge
     GW[API Gateway (FastAPI)]
@@ -510,6 +515,19 @@ Prefer Docker? Use the helper scripts:
 
 Ports default to 8000–8003 (gateway + three services). Override by exporting `POSTGRES_PORT`, `AUTH_SERVICE_URL`, `INTAKE_SERVICE_URL`, or `VISION_SERVICE_URL` before running the script.
 
+### Service processes & required env
+
+| Service | Entry point | Default port | Required env |
+| --- | --- | --- | --- |
+| Gateway | `lostfound.main:app` | 8000 | `AUTH_SERVICE_URL`, `INTAKE_SERVICE_URL`, `VISION_SERVICE_URL`, `NATS_URL`, JWT key paths |
+| Auth | `services.auth_service.app:app` | 8001 | `DATABASE_URL`, JWT key paths, `NATS_URL` |
+| Intake | `services.intake_service.app:app` | 8002 | `DATABASE_URL`, `AUTH_SERVICE_URL`, JWT key paths, `NATS_URL` |
+| Vision | `services.vision_service.app:app` | 8003 | `DATABASE_URL`, JWT key paths, `NATS_URL` |
+
+When `NATS_URL` is set the shared event bus publishes and subscribes through that broker; if it is unset the services fall back to in-process handlers (useful for unit tests, but the distributed deployment expects NATS).
+
+See `docs/runbooks.md` for a deeper walkthrough of local development, database bootstrap, and first deploy steps.
+
 ### Development commands
 
 ```bash
@@ -579,3 +597,5 @@ Backlog after MVP
 	•	Moderator console; trust scores for reporters.
 	•	Push notifications; SSO; meet-up location suggestions.
 	•	Social media ingestion (Snap etc.) with a moderation queue.
+	•	Split the claims and notify services out of the gateway once chat/notifications mature.
+	•	Restore the computer-vision blur worker as a standalone job (ties back into intake media hooks).

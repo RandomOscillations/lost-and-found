@@ -4,17 +4,17 @@ This checklist captures the work needed to lift the consolidated gateway into di
 
 ## Shared Foundations
 - [x] Extract shared models/schemas/settings into `packages/common` (DB models, Pydantic schemas, config, event bus helpers).
-- [ ] Provide a `common` package README explaining what is shared vs per-service.
-- [ ] Ensure alembic migrations or SQL bootstrap scripts live in `infra/sql` and are service-agnostic.
+- [x] Provide a `common` package README explaining what is shared vs per-service.
+- [x] Ensure alembic migrations or SQL bootstrap scripts live in `infra/sql` and are service-agnostic.
 
 ## Service: Auth
 - [x] Create `services/auth/app.py` exposing `/auth/*` routes with its own FastAPI instance.
-- [ ] Implement dedicated dependency wiring (DB session, password hashing, JWT keys).
-- [ ] Add service-specific `.env.example` documenting required environment variables.
+- [x] Implement dedicated dependency wiring (DB session, password hashing, JWT keys).
+- [x] Add service-specific `.env.example` documenting required environment variables.
 
 ## Service: Intake
 - [x] Create `services/intake_service/app.py` exposing item/report/subscription endpoints and background publishing.
-- [ ] Replace in-process event bus usage with HTTP/NATS calls; for MVP keep HTTP backchannel to gateway optional.
+- [x] Replace in-process event bus usage with HTTP/NATS calls; for MVP keep HTTP backchannel to gateway optional.
 - [ ] Handle media processing hooks (presign, blur worker) as background tasks or separate worker module.
 
 ## Service: Vision
@@ -35,8 +35,8 @@ This checklist captures the work needed to lift the consolidated gateway into di
 - [x] Maintain `/healthz` and `/readyz` plus auth token verification.
 
 ## Infra Updates
-- [ ] Expand `infra/docker-compose.yml` to run each service container + shared dependencies.
-- [ ] Add Dockerfiles (or a multi-stage build) per service.
+- [x] Expand `infra/docker-compose.yml` to run each service container + shared dependencies.
+- [x] Add Dockerfiles (or a multi-stage build) per service.
 - [x] Provide `scripts/dev.up.sh` / `dev.down.sh` orchestrating compose workflows.
 - [x] Document port assignments and inter-service URLs in README.
 
@@ -46,8 +46,8 @@ This checklist captures the work needed to lift the consolidated gateway into di
 - [x] Wire lint/format/test commands into README.
 
 ## Documentation
-- [ ] Update `Readme.md` architecture diagrams to reflect distributed services.
-- [ ] Add runbooks for local development, migrations, and first deployment.
-- [ ] Note remaining TODOs and future enhancements after the split.
+- [x] Update `Readme.md` architecture diagrams to reflect distributed services.
+- [x] Add runbooks for local development, migrations, and first deployment.
+- [x] Note remaining TODOs and future enhancements after the split.
 
 Track progress by ticking boxes as work completes. Adjust as new requirements emerge.

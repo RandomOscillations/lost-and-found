@@ -54,6 +54,8 @@ services:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/lostfound
       JWT_PRIVATE_KEY_PATH: /keys/jwt.key
       JWT_PUBLIC_KEY_PATH: /keys/jwt.pub
+      NATS_URL: nats://nats:4222
+      NATS_SUBJECT_PREFIX: lostfound.
     ports:
       - "8001:8001"
     volumes:
@@ -71,6 +73,8 @@ services:
       AUTH_SERVICE_URL: http://auth:8001
       JWT_PRIVATE_KEY_PATH: /keys/jwt.key
       JWT_PUBLIC_KEY_PATH: /keys/jwt.pub
+      NATS_URL: nats://nats:4222
+      NATS_SUBJECT_PREFIX: lostfound.
     ports:
       - "8002:8002"
     volumes:
@@ -87,6 +91,8 @@ services:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/lostfound
       JWT_PRIVATE_KEY_PATH: /keys/jwt.key
       JWT_PUBLIC_KEY_PATH: /keys/jwt.pub
+      NATS_URL: nats://nats:4222
+      NATS_SUBJECT_PREFIX: lostfound.
     ports:
       - "8003:8003"
     volumes:
@@ -108,6 +114,8 @@ services:
       VISION_SERVICE_URL: http://vision:8003
       JWT_PRIVATE_KEY_PATH: /keys/jwt.key
       JWT_PUBLIC_KEY_PATH: /keys/jwt.pub
+      NATS_URL: nats://nats:4222
+      NATS_SUBJECT_PREFIX: lostfound.
     ports:
       - "8000:8000"
     volumes:

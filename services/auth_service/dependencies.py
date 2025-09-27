@@ -13,6 +13,10 @@ from .service import AuthService
 _oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
+async def get_auth_service(session=Depends(get_db_session)) -> AuthService:
+    return AuthService(session)
+
+
 async def get_current_user(token: str = Depends(_oauth2_scheme), session=Depends(get_db_session)) -> User:
     try:
         payload = decode_jwt(token)

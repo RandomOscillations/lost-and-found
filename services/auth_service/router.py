@@ -2,17 +2,15 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from packages.common.db import get_db_session
 from packages.common.schemas.auth import LoginRequest, SignUpRequest, TokenResponse, UserProfile
 from .service import AuthService
-from .dependencies import get_current_user
+from .dependencies import get_auth_service, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/signup", response_model=UserProfile, status_code=status.HTTP_201_CREATED)
-async def signup(payload: SignUpRequest, session=Depends(get_db_session)) -> UserProfile:
-    service = AuthService(session)
+async def signup(payload: SignUpRequest, service: AuthService = Depends(get_auth_service)) -> UserProfile:
     try:
         user = await service.register_user(payload.email, payload.password, payload.display_name)
     except ValueError as exc:
@@ -21,8 +19,7 @@ async def signup(payload: SignUpRequest, session=Depends(get_db_session)) -> Use
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(payload: LoginRequest, session=Depends(get_db_session)) -> TokenResponse:
-    service = AuthService(session)
+async def login(payload: LoginRequest, service: AuthService = Depends(get_auth_service)) -> TokenResponse:
     try:
         user, token = await service.authenticate(payload.email, payload.password)
     except ValueError as exc:
