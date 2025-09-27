@@ -528,6 +528,24 @@ When `NATS_URL` is set the shared event bus publishes and subscribes through tha
 
 See `docs/runbooks.md` for a deeper walkthrough of local development, database bootstrap, and first deploy steps.
 
+### Web UI (Bootstrap MVP)
+
+The `ui/` directory contains a lightweight browser client for manual testing.
+
+```bash
+./scripts/dev.up.sh           # start backend services (postgres, auth, intake, vision, gateway, etc.)
+./scripts/ui.dev.sh           # serve static UI at http://127.0.0.1:5173
+```
+
+Once the page loads, set the gateway URL (defaults to `http://127.0.0.1:8000`) and use the forms to:
+
+- create accounts & log in (stores owner/finder JWTs locally)
+- post a found item (finder token)
+- post a lost item (owner token)
+- fetch matches, open a claim, and verify it as the finder
+
+All API calls hit the gateway; check the network tab or the console for details if something fails.
+
 ### Development commands
 
 ```bash

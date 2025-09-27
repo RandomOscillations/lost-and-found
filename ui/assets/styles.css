@@ -1,0 +1,11 @@
+body {
+  min-height: 100vh;
+}
+
+#session-list li {
+  font-family: ui-monospace, SFMono-Regular, SFMono, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+textarea {
+  resize: vertical;
+}
