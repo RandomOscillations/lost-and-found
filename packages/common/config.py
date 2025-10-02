@@ -37,6 +37,15 @@ class Settings(BaseSettings):
     nats_url: AnyUrl | str | None = Field(default=None, validation_alias="NATS_URL")
     nats_subject_prefix: str = Field(default="lostfound.", validation_alias="NATS_SUBJECT_PREFIX")
 
+    cors_origins: list[str] = Field(
+        default_factory=lambda: [
+            "http://127.0.0.1:5173",
+            "http://localhost:5173",
+            "http://[::1]:5173",
+        ],
+        validation_alias="CORS_ORIGINS",
+    )
+
     auth_service_url: AnyUrl | str = Field(
         default="http://127.0.0.1:8001", validation_alias="AUTH_SERVICE_URL"
     )

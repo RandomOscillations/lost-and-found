@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Request
 
 from packages.common.config import get_settings
+from packages.common.schemas.auth import LoginRequest, SignUpRequest
 
 from .proxy import forward_request
 
@@ -10,15 +11,25 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/signup")
-async def signup(request: Request):
+async def signup(payload: SignUpRequest, request: Request):
     settings = get_settings()
-    return await forward_request(request, base_url=settings.auth_service_url, path="/auth/signup")
+    return await forward_request(
+        request,
+        base_url=settings.auth_service_url,
+        path="/auth/signup",
+        json_body=payload,
+    )
 
 
 @router.post("/login")
-async def login(request: Request):
+async def login(payload: LoginRequest, request: Request):
     settings = get_settings()
-    return await forward_request(request, base_url=settings.auth_service_url, path="/auth/login")
+    return await forward_request(
+        request,
+        base_url=settings.auth_service_url,
+        path="/auth/login",
+        json_body=payload,
+    )
 
 
 @router.get("/me")

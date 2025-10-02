@@ -1,12 +1,20 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Request
+from pydantic import BaseModel
 
 from packages.common.config import get_settings
+from packages.common.schemas.item import FoundItemCreate, LostItemCreate
+from packages.common.schemas.subscription import SubscriptionCreate
 
 from .proxy import forward_request
 
 router = APIRouter(tags=["items"])
+
+
+class ReportPayload(BaseModel):
+    targetId: str
+    reason: str
 
 
 def _base() -> str:
@@ -14,13 +22,23 @@ def _base() -> str:
 
 
 @router.post("/items/lost")
-async def create_lost(request: Request):
-    return await forward_request(request, base_url=_base(), path="/items/lost")
+async def create_lost(payload: LostItemCreate, request: Request):
+    return await forward_request(
+        request,
+        base_url=_base(),
+        path="/items/lost",
+        json_body=payload,
+    )
 
 
 @router.post("/items/found")
-async def create_found(request: Request):
-    return await forward_request(request, base_url=_base(), path="/items/found")
+async def create_found(payload: FoundItemCreate, request: Request):
+    return await forward_request(
+        request,
+        base_url=_base(),
+        path="/items/found",
+        json_body=payload,
+    )
 
 
 @router.get("/items/{item_id}")
@@ -34,13 +52,23 @@ async def list_items(request: Request):
 
 
 @router.post("/reports")
-async def report(request: Request):
-    return await forward_request(request, base_url=_base(), path="/reports")
+async def report(payload: ReportPayload, request: Request):
+    return await forward_request(
+        request,
+        base_url=_base(),
+        path="/reports",
+        json_body=payload,
+    )
 
 
 @router.post("/subscriptions")
-async def subscribe(request: Request):
-    return await forward_request(request, base_url=_base(), path="/subscriptions")
+async def subscribe(payload: SubscriptionCreate, request: Request):
+    return await forward_request(
+        request,
+        base_url=_base(),
+        path="/subscriptions",
+        json_body=payload,
+    )
 
 
 @router.delete("/subscriptions")

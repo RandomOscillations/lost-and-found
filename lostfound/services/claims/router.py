@@ -77,7 +77,10 @@ async def update_claim(
     current_user=Depends(get_current_user),
 ) -> ClaimSchema:
     service = ClaimsService(session)
-    claim = await service.update_status(claim_id, current_user.id, payload.action)
+    try:
+        claim = await service.update_status(claim_id, current_user.id, payload.action)
+    except NoResultFound as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Claim not found") from exc
     return serialize_claim(claim)
 
 
