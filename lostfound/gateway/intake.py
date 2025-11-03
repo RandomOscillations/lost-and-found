@@ -8,6 +8,7 @@ from packages.common.schemas.item import FoundItemCreate, LostItemCreate
 from packages.common.schemas.subscription import SubscriptionCreate
 
 from .proxy import forward_request
+from .idempotency import ensure_idempotent
 
 router = APIRouter(tags=["items"])
 
@@ -23,6 +24,7 @@ def _base() -> str:
 
 @router.post("/items/lost")
 async def create_lost(payload: LostItemCreate, request: Request):
+    await ensure_idempotent(request, payload.model_dump(mode="json"))
     return await forward_request(
         request,
         base_url=_base(),
@@ -33,6 +35,7 @@ async def create_lost(payload: LostItemCreate, request: Request):
 
 @router.post("/items/found")
 async def create_found(payload: FoundItemCreate, request: Request):
+    await ensure_idempotent(request, payload.model_dump(mode="json"))
     return await forward_request(
         request,
         base_url=_base(),
@@ -53,6 +56,7 @@ async def list_items(request: Request):
 
 @router.post("/reports")
 async def report(payload: ReportPayload, request: Request):
+    await ensure_idempotent(request, payload.model_dump(mode="json"))
     return await forward_request(
         request,
         base_url=_base(),
@@ -63,6 +67,7 @@ async def report(payload: ReportPayload, request: Request):
 
 @router.post("/subscriptions")
 async def subscribe(payload: SubscriptionCreate, request: Request):
+    await ensure_idempotent(request, payload.model_dump(mode="json"))
     return await forward_request(
         request,
         base_url=_base(),

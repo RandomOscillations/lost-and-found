@@ -150,11 +150,23 @@ class ClaimsService:
         )
         return claim
 
-    async def list_messages(self, thread_id: uuid.UUID, user_id: uuid.UUID) -> list[ThreadMessage]:
+    async def list_messages(
+        self,
+        thread_id: uuid.UUID,
+        user_id: uuid.UUID,
+        *,
+        page: int | None = None,
+        limit: int | None = None,
+    ) -> tuple[list[ThreadMessage], int]:
         await self._ensure_can_view_thread(thread_id, user_id)
-        stmt = select(ThreadMessage).where(ThreadMessage.thread_id == thread_id).order_by(ThreadMessage.created_at)
+        base = select(ThreadMessage).where(ThreadMessage.thread_id == thread_id)
+        total = (await self.session.execute(base.with_only_columns(ThreadMessage.id))).scalars().unique().count()
+        stmt = base.order_by(ThreadMessage.created_at)
+        if page and limit:
+            offset = max(0, (page - 1) * limit)
+            stmt = stmt.offset(offset).limit(limit)
         result = await self.session.execute(stmt)
-        return result.scalars().all()
+        return result.scalars().all(), int(total)
 
     async def post_message(self, thread_id: uuid.UUID, sender_id: uuid.UUID, body: str) -> ThreadMessage:
         await self._ensure_can_view_thread(thread_id, sender_id, touch=True)

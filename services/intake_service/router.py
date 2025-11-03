@@ -7,7 +7,7 @@ from sqlalchemy.exc import NoResultFound
 
 from packages.common.db import get_db_session
 from packages.common.events import bus
-from packages.common.models import Item, ItemStatus, ItemType, PromptSource
+from .models import Item, ItemStatus, ItemType, PromptSource
 from packages.common.schemas.common import APIMessage, Media
 from packages.common.schemas.item import FoundItemCreate, ItemOut, ItemSearchQuery, LostItemCreate
 from packages.common.schemas.subscription import Subscription, SubscriptionCreate
@@ -128,18 +128,25 @@ async def search_items(
     tag: str | None = Query(None),
     status_param: str | None = Query(None, alias="status"),
     category: str | None = Query(None),
+    page: int | None = Query(None, ge=1),
+    limit: int | None = Query(None, ge=1, le=100),
     session=Depends(get_db_session),
     question_bank: QuestionBankService = Depends(get_question_bank),
+    response: Response,
 ) -> list[ItemOut]:
     service = IntakeService(session, question_bank)
-    items = await service.search_items(
+    items, total = await service.search_items(
         type_=type,
         zone=zone,
         tag=tag,
         status=status_param,
         category=category,
+        page=page,
+        limit=limit,
     )
-    return [serialize_item(item) for item in items]
+    response_items = [serialize_item(item) for item in items]
+    response.headers["X-Total-Count"] = str(total)
+    return response_items
 
 
 @router.post("/reports", response_model=APIMessage, status_code=status.HTTP_202_ACCEPTED)

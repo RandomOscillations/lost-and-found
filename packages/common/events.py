@@ -5,10 +5,20 @@ import json
 import logging
 from collections import defaultdict
 from typing import Awaitable, Dict, List, Protocol
+from datetime import datetime, timezone
+import contextvars
 
 from .config import get_settings
 
 logger = logging.getLogger("events")
+
+_trace_id: contextvars.ContextVar[str | None] = contextvars.ContextVar("trace_id", default=None)
+
+def set_trace_id(value: str | None) -> None:
+    _trace_id.set(value)
+
+def get_trace_id() -> str | None:
+    return _trace_id.get()
 
 
 class Handler(Protocol):
@@ -76,10 +86,18 @@ class EventBus:
             asyncio.create_task(self._register_remote_subscription(event))
 
     async def publish(self, event: str, payload: dict) -> None:
+        envelope = {
+            "type": event,
+            "v": 1,
+            "traceId": get_trace_id(),
+            "occurredAt": datetime.now(timezone.utc).isoformat(),
+            "data": payload,
+        }
         if self._nats_url:
             client = await self._ensure_nats()
             if client is not None:
-                await client.publish(self._full_subject(event), json.dumps(payload).encode())
+                await client.publish(self._full_subject(event), json.dumps(envelope).encode())
+        # For local handlers, preserve backward compatibility: pass data only
         await self._dispatch_local(event, payload)
 
     def publish_background(self, event: str, payload: dict) -> Awaitable[None]:

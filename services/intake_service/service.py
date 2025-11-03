@@ -7,7 +7,7 @@ from sqlalchemy import and_, select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from packages.common.models import (
+from .models import (
     Item,
     ItemMedia,
     ItemPrompt,
@@ -113,8 +113,10 @@ class IntakeService:
         tag: str | None = None,
         status: str | None = None,
         category: str | None = None,
-    ) -> list[Item]:
-        stmt = select(Item)
+        page: int | None = None,
+        limit: int | None = None,
+    ) -> tuple[list[Item], int]:
+        base = select(Item)
         conditions = []
         if type_:
             conditions.append(Item.type == type_)
@@ -127,10 +129,16 @@ class IntakeService:
         if tag:
             conditions.append(Item.tags.contains([tag.lower()]))
         if conditions:
-            stmt = stmt.where(and_(*conditions))
-        stmt = stmt.order_by(Item.created_at.desc())
+            base = base.where(and_(*conditions))
+        # total count
+        total = (await self.session.execute(base.with_only_columns(Item.id))).scalars().unique().count()
+        # page/limit
+        stmt = base.order_by(Item.created_at.desc())
+        if page and limit:
+            offset = max(0, (page - 1) * limit)
+            stmt = stmt.offset(offset).limit(limit)
         result = await self.session.execute(stmt)
-        return result.scalars().all()
+        return result.scalars().all(), int(total)
 
     async def list_prompts_for_item(self, item_id: uuid.UUID) -> list[ItemPrompt]:
         stmt = select(ItemPrompt).where(ItemPrompt.item_id == item_id).order_by(ItemPrompt.position.asc())

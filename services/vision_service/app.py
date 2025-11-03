@@ -8,6 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
 from packages.common.config import get_settings
 from packages.common.db import AsyncSessionLocal, async_engine, get_db_session
 from packages.common.models import Base
+from sqlalchemy import text
+from .models import VisionBase
 
 from .router import router
 
@@ -28,6 +30,18 @@ def create_app(
     async def _startup() -> None:  # pragma: no cover
         async with target_engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            # Ensure local vision tables (embeddings) exist
+            await conn.run_sync(VisionBase.metadata.create_all)
+            # Create ANN index for embeddings if pgvector is available
+            await conn.execute(
+                text(
+                    """
+                    CREATE INDEX IF NOT EXISTS idx_embeddings_vec_cosine
+                    ON embeddings USING ivfflat (vec vector_cosine_ops)
+                    WITH (lists = 100);
+                    """
+                )
+            )
         if on_startup_hook:
             await on_startup_hook(app)
 

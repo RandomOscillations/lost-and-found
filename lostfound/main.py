@@ -4,14 +4,14 @@ import logging
 import uuid
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.openapi.utils import get_openapi
 
 from packages.common.config import get_settings
 from packages.common.db import AsyncSessionLocal, async_engine
-from packages.common.events import bus
+from packages.common.events import bus, set_trace_id
 from packages.common.models import Base
 from packages.common.schemas.common import APIMessage
 from packages.common.question_bank import QuestionBankService
@@ -91,6 +91,34 @@ def custom_openapi():
 
 
 app.openapi = custom_openapi  # type: ignore[assignment]
+
+
+@app.middleware("http")
+async def request_id_middleware(request: Request, call_next):
+    rid = request.headers.get("X-Request-ID")
+    if not rid:
+        import uuid as _uuid
+        rid = str(_uuid.uuid4())
+    # propagate to event bus
+    set_trace_id(rid)
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = rid
+    return response
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    rid = request.headers.get("X-Request-ID") or ""
+    payload = {"error": {"code": exc.status_code, "message": exc.detail, "traceId": rid}}
+    return JSONResponse(status_code=exc.status_code, content=payload)
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    rid = request.headers.get("X-Request-ID") or ""
+    payload = {"error": {"code": 500, "message": "Internal Server Error", "traceId": rid}}
+    logger.exception("Unhandled error: %s", exc)
+    return JSONResponse(status_code=500, content=payload)
 
 
 @app.get("/healthz", response_class=JSONResponse)

@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from packages.common import security
 from packages.common.jwt import encode_jwt
-from packages.common.models import User, UserRole
+from .models import User, UserRole
 
 
 class AuthService:

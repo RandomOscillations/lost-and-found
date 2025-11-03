@@ -6,6 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
 from packages.common.db import get_db_session
+from lostfound.gateway.idempotency import ensure_idempotent
+from fastapi import Request
 from packages.common.schemas.claim import Claim as ClaimSchema
 from packages.common.schemas.claim import ClaimCreate, ClaimUpdate, Message as MessageSchema, MessageCreate
 from services.auth_service.dependencies import get_current_user
@@ -42,7 +44,11 @@ async def open_claim(
     payload: ClaimCreate,
     session=Depends(get_db_session),
     current_user=Depends(get_current_user),
+    request: Request = None,
 ) -> ClaimSchema:
+    if request is not None:
+        from lostfound.gateway.idempotency import ensure_idempotent
+        await ensure_idempotent(request, payload.model_dump(mode="json"))
     service = ClaimsService(session)
     claim = await service.open_claim(
         lost_item_id=uuid.UUID(payload.itemId),
@@ -87,11 +93,16 @@ async def update_claim(
 @router.get("/threads/{thread_id}/messages", response_model=list[MessageSchema])
 async def list_messages(
     thread_id: uuid.UUID,
+    page: int | None = Query(None, ge=1),
+    limit: int | None = Query(None, ge=1, le=100),
     session=Depends(get_db_session),
     current_user=Depends(get_current_user),
+    response: Response = None,
 ) -> list[MessageSchema]:
     service = ClaimsService(session)
-    messages = await service.list_messages(thread_id, current_user.id)
+    messages, total = await service.list_messages(thread_id, current_user.id, page=page, limit=limit)
+    if response is not None:
+        response.headers["X-Total-Count"] = str(total)
     return [serialize_message(msg) for msg in messages]
 
 

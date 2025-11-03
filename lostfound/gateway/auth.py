@@ -6,6 +6,7 @@ from packages.common.config import get_settings
 from packages.common.schemas.auth import LoginRequest, SignUpRequest
 
 from .proxy import forward_request
+from .idempotency import ensure_idempotent
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -13,6 +14,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/signup")
 async def signup(payload: SignUpRequest, request: Request):
     settings = get_settings()
+    await ensure_idempotent(request, payload.model_dump(mode="json"))
     return await forward_request(
         request,
         base_url=settings.auth_service_url,
